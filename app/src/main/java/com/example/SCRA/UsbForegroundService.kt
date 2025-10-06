@@ -42,24 +42,35 @@ class UsbForegroundService : Service() {
                 val device = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
                 val granted = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
                 if (granted && device != null) {
-                    Log.i(TAG, "Разрешение получено для ${device.deviceName}")
+                    Log.i(TAG, "1 Разрешение получено для ${device.deviceName}")
                     openDevice(device)
                 } else {
-                    Log.w(TAG, "Разрешение отклонено для ${device?.deviceName}")
+                    Log.w(TAG, "2 Разрешение отклонено для ${device?.deviceName}")
                 }
             }
         }
     }
 
+    // В методе onCreate() сервиса:
     override fun onCreate() {
         super.onCreate()
-        Log.i(TAG, "Сервис создан")
+        Log.i(TAG, "3 Сервис создан")
         usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
-        registerReceiver(permissionReceiver, IntentFilter(ACTION_USB_PERMISSION))
+
+        // Исправление для Android 12+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(
+                permissionReceiver,
+                IntentFilter(ACTION_USB_PERMISSION),
+                Context.RECEIVER_NOT_EXPORTED
+            )
+        } else {
+            registerReceiver(permissionReceiver, IntentFilter(ACTION_USB_PERMISSION))
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i(TAG, "Сервис запущен")
+        Log.i(TAG, "4 Сервис запущен")
         startForegroundIfNeeded()
         discoverAndRequest()
         return START_STICKY
@@ -77,7 +88,7 @@ class UsbForegroundService : Service() {
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("USB RFID Service")
-            .setContentText("Сервис работает в фоне")
+            .setContentText("5 Сервис работает в фоне")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentIntent(pendingIntent)
             .build()
@@ -92,7 +103,7 @@ class UsbForegroundService : Service() {
                 "USB RFID Service",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Канал для USB RFID сервиса"
+                description = "6 Канал для USB RFID сервиса"
             }
 
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -107,7 +118,7 @@ class UsbForegroundService : Service() {
         scope.launch {
             val drivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
             if (drivers.isEmpty()) {
-                Log.i(TAG, "USB-ридеры не найдены")
+                Log.i(TAG, "7 USB-ридеры не найдены")
                 return@launch
             }
 
@@ -122,7 +133,7 @@ class UsbForegroundService : Service() {
                     PendingIntent.FLAG_IMMUTABLE
                 )
                 usbManager.requestPermission(device, pi)
-                Log.i(TAG, "Запрошено разрешение на ${device.deviceName}")
+                Log.i(TAG, "8 Запрошено разрешение на ${device.deviceName}")
             } else {
                 openDevice(device)
             }
@@ -139,23 +150,23 @@ class UsbForegroundService : Service() {
 
             connection = usbManager.openDevice(driver.device)
             if (connection == null) {
-                Log.e(TAG, "Не удалось открыть устройство")
+                Log.e(TAG, "9 Не удалось открыть устройство")
                 return
             }
 
             port = driver.ports.firstOrNull()
             if (port == null) {
-                Log.e(TAG, "У драйвера нет портов")
+                Log.e(TAG, "10 У драйвера нет портов")
                 return
             }
 
             port!!.open(connection)
             port!!.setParameters(9600, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE)
 
-            Log.i(TAG, "Порт открыт, запускаем чтение")
+            Log.i(TAG, "11 Порт открыт, запускаем чтение")
             startReadingLoop()
         } catch (e: Exception) {
-            Log.e(TAG, "Ошибка открытия: ${e.message}", e)
+            Log.e(TAG, "12 Ошибка открытия: ${e.message}", e)
         }
     }
 
@@ -180,7 +191,7 @@ class UsbForegroundService : Service() {
                         sendBroadcast(intent)
                     }
                 } catch (io: IOException) {
-                    Log.e(TAG, "Ошибка чтения: ${io.message}")
+                    Log.e(TAG, "13 Ошибка чтения: ${io.message}")
                     delay(1000)
                 }
             }
@@ -194,9 +205,9 @@ class UsbForegroundService : Service() {
         scope.launch {
             try {
                 port?.write(command.toByteArray(), 1000)
-                Log.i(TAG, "Команда отправлена: $command")
+                Log.i(TAG, "14 Команда отправлена: $command")
             } catch (e: Exception) {
-                Log.e(TAG, "Ошибка отправки команды: ${e.message}")
+                Log.e(TAG, "15 Ошибка отправки команды: ${e.message}")
             }
         }
     }
@@ -205,7 +216,7 @@ class UsbForegroundService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.i(TAG, "Сервис уничтожается")
+        Log.i(TAG, "16 Сервис уничтожается")
 
         // Очистка ресурсов
         unregisterReceiver(permissionReceiver)
@@ -214,7 +225,7 @@ class UsbForegroundService : Service() {
         try {
             port?.close()
         } catch (e: Exception) {
-            Log.e(TAG, "Ошибка закрытия порта: ${e.message}")
+            Log.e(TAG, "17 Ошибка закрытия порта: ${e.message}")
         }
 
         connection?.close()

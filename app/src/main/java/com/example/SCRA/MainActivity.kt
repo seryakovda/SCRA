@@ -67,18 +67,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        initLocation()
-        initCamera()
-        startUsbService() // Запускаем сервис при возобновлении Activity
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Регистрируем BroadcastReceiver для получения данных от USB сервиса
-        registerReceiver(usbDataReceiver, IntentFilter("USB_DATA_RECEIVED"))
+        // Исправление для Android 12+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(
+                usbDataReceiver,
+                IntentFilter("USB_DATA_RECEIVED"),
+                Context.RECEIVER_NOT_EXPORTED
+            )
+        } else {
+            registerReceiver(usbDataReceiver, IntentFilter("USB_DATA_RECEIVED"))
+        }
 
         setContent {
             SCRATheme {
@@ -90,6 +92,15 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        // Запускаем USB сервис при создании Activity
+        startUsbService()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        initLocation()
+        initCamera()
     }
 
     override fun onPause() {
@@ -108,23 +119,29 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startUsbService() {
-        val serviceIntent = Intent(this, UsbForegroundService::class.java)
+        try {
+            val serviceIntent = Intent(this, UsbForegroundService::class.java)
 
-        // Запускаем сервис
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent)
-        } else {
-            startService(serviceIntent)
+            // Запускаем сервис
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
+
+            // Привязываемся к сервису для взаимодействия
+            bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+            Log.i("MainActivity", "USB сервис запущен")
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Ошибка запуска USB сервиса: ${e.message}")
         }
-
-        // Привязываемся к сервису для взаимодействия
-        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
     }
 
     // Методы для взаимодействия с сервисом из других частей приложения
     fun sendCommandToUsb(command: String) {
         if (isBound) {
             usbService?.sendCommand(command)
+            Log.i("MainActivity", "Команда отправлена в USB сервис: $command")
         } else {
             Log.w("MainActivity", "Сервис не подключен, команда не отправлена: $command")
         }
@@ -135,23 +152,26 @@ class MainActivity : ComponentActivity() {
     }
 
     // Остальные методы для разрешений остаются без изменений
-    //private lateinit var mFusedLocationClient: FusedLocationProviderClient
     private val permissionId = 2
 
     @SuppressLint("MissingPermission", "SetTextI18n")
     fun initLocation() {
         if (checkPermissions()) {
             // Разрешения есть, можно работать с локацией
+            Log.i("MainActivity", "Разрешения локации получены")
         } else {
             requestPermissions()
+            Log.i("MainActivity", "Запрошены разрешения локации")
         }
     }
 
     fun initCamera(){
         if (checkPermissionsCamera()) {
             // Разрешения есть, можно работать с камерой
+            Log.i("MainActivity", "Разрешения камеры получены")
         } else {
             requestPermissionsCamera()
+            Log.i("MainActivity", "Запрошены разрешения камеры")
         }
     }
 
@@ -216,6 +236,9 @@ class MainActivity : ComponentActivity() {
         if (requestCode == permissionId) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 initLocation()
+                Log.i("MainActivity", "Разрешения получены после запроса")
+            } else {
+                Log.w("MainActivity", "Разрешения отклонены пользователем")
             }
         }
     }
