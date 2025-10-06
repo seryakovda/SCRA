@@ -131,9 +131,9 @@ class MainActivity : ComponentActivity() {
 
             // Привязываемся к сервису для взаимодействия
             bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
-            Log.i("MainActivity", "USB сервис запущен")
+            Log.i("MainActivity", "2200001 USB сервис запущен")
         } catch (e: Exception) {
-            Log.e("MainActivity", "Ошибка запуска USB сервиса: ${e.message}")
+            Log.e("MainActivity", "2200002 Ошибка запуска USB сервиса: ${e.message}")
         }
     }
 
@@ -141,9 +141,9 @@ class MainActivity : ComponentActivity() {
     fun sendCommandToUsb(command: String) {
         if (isBound) {
             usbService?.sendCommand(command)
-            Log.i("MainActivity", "Команда отправлена в USB сервис: $command")
+            Log.i("MainActivity", "2200003 Команда отправлена в USB сервис: $command")
         } else {
-            Log.w("MainActivity", "Сервис не подключен, команда не отправлена: $command")
+            Log.w("MainActivity", "2200004 Сервис не подключен, команда не отправлена: $command")
         }
     }
 
@@ -158,20 +158,20 @@ class MainActivity : ComponentActivity() {
     fun initLocation() {
         if (checkPermissions()) {
             // Разрешения есть, можно работать с локацией
-            Log.i("MainActivity", "Разрешения локации получены")
+            Log.i("MainActivity", "2200005 Разрешения локации получены")
         } else {
             requestPermissions()
-            Log.i("MainActivity", "Запрошены разрешения локации")
+            Log.i("MainActivity", "2200006 Запрошены разрешения локации")
         }
     }
 
     fun initCamera(){
         if (checkPermissionsCamera()) {
             // Разрешения есть, можно работать с камерой
-            Log.i("MainActivity", "Разрешения камеры получены")
+            Log.i("MainActivity", "2200007 Разрешения камеры получены")
         } else {
             requestPermissionsCamera()
-            Log.i("MainActivity", "Запрошены разрешения камеры")
+            Log.i("MainActivity", "2200008 Запрошены разрешения камеры")
         }
     }
 
@@ -236,9 +236,9 @@ class MainActivity : ComponentActivity() {
         if (requestCode == permissionId) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 initLocation()
-                Log.i("MainActivity", "Разрешения получены после запроса")
+                Log.i("MainActivity", "2200009 Разрешения получены после запроса")
             } else {
-                Log.w("MainActivity", "Разрешения отклонены пользователем")
+                Log.w("MainActivity", "2200010 Разрешения отклонены пользователем")
             }
         }
     }

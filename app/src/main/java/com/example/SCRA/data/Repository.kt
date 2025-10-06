@@ -105,5 +105,10 @@ class Repository @Inject constructor(
         return remoteSource.getDataByQrCode(qrCode,sessionHandle)
     }
 
+    suspend fun sendBinaryData(binaryData:String){
+        var sessionHandle: String
+        sessionHandle = getSessionHandle()
+        remoteSource.sendBinaryData(binaryData,sessionHandle)
+    }
 }
 
