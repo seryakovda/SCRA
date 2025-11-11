@@ -2,8 +2,6 @@ package com.example.SCRA
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.*
 import android.content.pm.PackageManager
 import android.location.LocationManager
@@ -16,21 +14,12 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.SCRA.screens.auth.AuthViewModel
-import com.example.SCRA.screens.edit.mainEditScreen
+import com.example.SCRA.navigation.AppNavHost
 import com.example.SCRA.ui.theme.SCRATheme
-import com.example.tire.screens.auth.authError.AuthScreenError
-import com.example.tire.screens.auth.enterLogin.AuthScreen2
 import dagger.hilt.android.AndroidEntryPoint
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -88,7 +77,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    TireNavHost()
+                    AppNavHost()
                 }
             }
         }
@@ -244,50 +233,4 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// Классы для навигации остаются без изменений
-sealed class Destination(val route: String) {
-    object AuthScreen: Destination("AuthScreen")
-    object AuthScreenError: Destination("AuthScreenError")
-    object ScreenMainJob: Destination("ScreenMainJob")
-    object ScreenEdit: Destination("ScreenEdit")
-}
 
-@SuppressLint("RestrictedApi")
-@Composable
-fun TireNavHost(
-    navController: NavHostController = rememberNavController(),
-    startDestination: String = Destination.AuthScreen.route
-) {
-    val navHostViewModel = hiltViewModel<NavHostViewModel>()
-    val viewModel = hiltViewModel<AuthViewModel>()
-
-    val state = navHostViewModel.authState.observeAsState()
-    when (state.value) {
-        NavHostViewModel.AuthState.FAIL ->                  navController.navigate(Destination.AuthScreenError.route)
-        NavHostViewModel.AuthState.AUTH ->                  navController.popBackStack()
-        NavHostViewModel.AuthState.SUCCESS ->               navController.navigate(Destination.ScreenMainJob.route)
-        NavHostViewModel.AuthState.EDIT ->                  navController.navigate(Destination.ScreenEdit.route)
-        else -> {}
-    }
-
-    NavHost(
-        navController = navController,
-        startDestination = startDestination
-    ) {
-        composable(Destination.AuthScreen.route){
-            AuthScreen2(navController = navController)
-        }
-
-        composable(Destination.AuthScreenError.route) {
-            AuthScreenError(
-                navController = navController
-            )
-        }
-
-        composable(Destination.ScreenEdit.route) {
-            mainEditScreen(
-                navController = navController
-            )
-        }
-    }
-}

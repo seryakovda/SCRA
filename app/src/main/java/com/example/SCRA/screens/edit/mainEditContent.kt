@@ -78,128 +78,124 @@ fun mainEditContent(
                 .background(color = Color.White)
                 .windowInsetsPadding(WindowInsets.safeDrawing)
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            //verticalArrangement = Arrangement.Center,
+            //horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (qrCodeURL.isEmpty() && startBarCodeScan) {
-                Column(
+//            if (qrCodeURL.isEmpty() && startBarCodeScan) {
+//                Column(
+//                    modifier = Modifier
+//                        .background(color = Color.Black)
+//                        .fillMaxSize(),
+//                    verticalArrangement = Arrangement.Center,
+//                    horizontalAlignment = Alignment.CenterHorizontally
+//                ) {
+            Box(
+                modifier = Modifier
+                    .padding(start = 20.dp, end = 20.dp, top = 30.dp)
+                    .background(
+                        color = Color(0xFFF9F9F9),
+                        shape = RoundedCornerShape(25.dp)
+                    )
+                    .height(35.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
                     modifier = Modifier
-                        .background(color = Color.Black)
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .padding(vertical = 5.dp, horizontal = 18.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(11.dp)
                 ) {
-                    Box(
+                    //Icon(imageVector = if (flashlightOn) Icons.Filled.flashOn else Icons.Filled.FlashOff,
+                    Icon( painter =  if (flashlightOn) painterResource(R.drawable.flash0) else painterResource(R.drawable.flash1),
+                        "flash",
                         modifier = Modifier
-                            .size(250.dp)
-                            .clip(shape = RoundedCornerShape(size = 14.dp))
-                            .clipToBounds()
-                            .border(2.dp, Color.Gray, RoundedCornerShape(size = 14.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        QrScanner(
-                            modifier = Modifier
-                                .clipToBounds()
-                                .clip(shape = RoundedCornerShape(size = 14.dp)),
-                            flashlightOn = flashlightOn,
-                            launchGallery = launchGallery,
-                            onCompletion = {
+                            .size(24.dp)
+                            .clickable {
+                                flashlightOn = !flashlightOn
+                            })
 
-                                getDataByQrCode(it)
-                                //qrCodeURL = it
+                    VerticalDivider(
+                        modifier = Modifier,
+                        thickness = 1.dp,
+                        color = Color(0xFFD8D8D8)
+                    )
 
-                                startBarCodeScan = false
-                            },
-                            onGalleryCallBackHandler = {
-                                launchGallery = it
-                            },
-                            onFailure = {
-                                coroutineScope.launch {
-                                    if (it.isEmpty()) {
-                                        snackBarHostState.showSnackbar("Испорченный Qr-КОД")
-                                    } else {
-                                        snackBarHostState.showSnackbar(it)
-                                    }
-                                }
-                            }
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .padding(start = 20.dp, end = 20.dp, top = 30.dp)
-                            .background(
-                                color = Color(0xFFF9F9F9),
-                                shape = RoundedCornerShape(25.dp)
-                            )
-                            .height(35.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(vertical = 5.dp, horizontal = 18.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(11.dp)
-                        ) {
-                            //Icon(imageVector = if (flashlightOn) Icons.Filled.flashOn else Icons.Filled.FlashOff,
-                            Icon( painter =  if (flashlightOn) painterResource(R.drawable.flash0) else painterResource(R.drawable.flash1),
-                                "flash",
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable {
-                                        flashlightOn = !flashlightOn
-                                    })
-
-                            VerticalDivider(
-                                modifier = Modifier,
-                                thickness = 1.dp,
-                                color = Color(0xFFD8D8D8)
-                            )
-
-                            Image(
-                                painter = painterResource(R.drawable.ic_gallery_icon),
-                                contentDescription = "gallery",
-                                contentScale = ContentScale.Fit,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable {
-                                        launchGallery = true
-                                    }
-                            )
-                        }
-                    }
-                }
-            } else {
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Button(
-                        onClick = {
-                            startBarCodeScan = true
-                            qrCodeURL = ""
-
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF)),
-                    ) {
-                        Text(
-                            text = "Сканировать QR-Код",
-                            modifier = Modifier
-                                .background(Color.Transparent)
-                                .padding(horizontal = 12.dp, vertical = 12.dp),
-                            fontSize = 16.sp
-                        )
-                    }
-                    printPass(dataByQrCode)
-// отрисовка результата сканирования
-//                    Text(
-//                        text = qrCodeURL,
-//                        color = Color.Black,
-//                        modifier = Modifier.padding(top = 12.dp)
-//                    )
-
+//                            Image(
+//                                painter = painterResource(R.drawable.ic_gallery_icon),
+//                                contentDescription = "gallery",
+//                                contentScale = ContentScale.Fit,
+//                                modifier = Modifier
+//                                    .size(24.dp)
+//                                    .clickable {
+//                                        launchGallery = true
+//                                    }
+//                            )
                 }
             }
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(shape = RoundedCornerShape(size = 14.dp))
+                    .clipToBounds()
+                    .border(2.dp, Color.Gray, RoundedCornerShape(size = 14.dp)),
+                //contentAlignment = Alignment.Center
+            ) {
+                QrScanner(
+                    modifier = Modifier
+                        .clipToBounds()
+                        .clip(shape = RoundedCornerShape(size = 14.dp)),
+                    flashlightOn = flashlightOn,
+                    launchGallery = launchGallery,
+                    onCompletion = {
+
+                        getDataByQrCode(it)
+                        //qrCodeURL = it
+
+                        startBarCodeScan = false
+                    },
+                    onGalleryCallBackHandler = {
+                        launchGallery = it
+                    },
+                    onFailure = {
+                        coroutineScope.launch {
+                            if (it.isEmpty()) {
+                                snackBarHostState.showSnackbar("Испорченный Qr-КОД")
+                            } else {
+                                snackBarHostState.showSnackbar(it)
+                            }
+                        }
+                    }
+                )
+            }
+
+
+                //}
+//            } else {
+//                Column(
+//                    verticalArrangement = Arrangement.Center,
+//                    horizontalAlignment = Alignment.CenterHorizontally
+//                ) {
+//                    Button(
+//                        onClick = {
+//                            startBarCodeScan = true
+//                            qrCodeURL = ""
+//
+//                        },
+//                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF)),
+//                    ) {
+//                        Text(
+//                            text = "Сканировать QR-Код",
+//                            modifier = Modifier
+//                                .background(Color.Transparent)
+//                                .padding(horizontal = 12.dp, vertical = 12.dp),
+//                            fontSize = 16.sp
+//                        )
+//                    }
+//                    // отрисовка результата сканирования
+//                    printPass(dataByQrCode)
+//
+//                }
+//            }
         }
 
 

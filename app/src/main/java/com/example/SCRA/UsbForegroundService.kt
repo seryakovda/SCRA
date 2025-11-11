@@ -50,10 +50,10 @@ class UsbForegroundService : Service() {
                 val device = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
                 val granted = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
                 if (granted && device != null) {
-                    Log.i(TAG, "0000001 Разрешение получено для ${device.deviceName}")
+                    myLog.i(TAG, "0000001 Разрешение получено для ${device.deviceName}")
                     openDevice(device)
                 } else {
-                    Log.w(TAG, "0000002 Разрешение отклонено для ${device?.deviceName}")
+                    myLog.w(TAG, "0000002 Разрешение отклонено для ${device?.deviceName}")
                 }
             }
         }
@@ -61,7 +61,7 @@ class UsbForegroundService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.i(TAG, "0000003 Сервис создан")
+        myLog.i(TAG, "0000003 Сервис создан")
         usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -76,7 +76,7 @@ class UsbForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i(TAG, "0000004 Сервис запущен")
+        myLog.i(TAG, "0000004 Сервис запущен")
         startForegroundIfNeeded()
         discoverAndRequest()
         return START_STICKY
@@ -108,7 +108,7 @@ class UsbForegroundService : Service() {
             startForeground(NOTIFICATION_ID, notification)
         }
 
-        Log.i(TAG, "0000006 Foreground service запущен")
+        myLog.i(TAG, "0000006 Foreground service запущен")
     }
 
     private fun createNotificationChannel() {
@@ -134,7 +134,7 @@ class UsbForegroundService : Service() {
             try {
                 val drivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
                 if (drivers.isEmpty()) {
-                    Log.i(TAG, "0000009 USB-ридеры не найдены")
+                    myLog.i(TAG, "0000009 USB-ридеры не найдены")
                     return@launch
                 }
 
@@ -149,12 +149,12 @@ class UsbForegroundService : Service() {
                         PendingIntent.FLAG_IMMUTABLE
                     )
                     usbManager.requestPermission(device, pi)
-                    Log.i(TAG, "0000010 Запрошено разрешение на ${device.deviceName}")
+                    myLog.i(TAG, "0000010 Запрошено разрешение на ${device.deviceName}")
                 } else {
                     openDevice(device)
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "0000011 Ошибка при поиске USB устройств: ${e.message}")
+                myLog.e(TAG, "0000011 Ошибка при поиске USB устройств: ${e.message}")
             }
         }
     }
@@ -169,26 +169,27 @@ class UsbForegroundService : Service() {
 
             connection = usbManager.openDevice(driver.device)
             if (connection == null) {
-                Log.e(TAG, "0000012 Не удалось открыть устройство")
+                myLog.e(TAG, "0000012 Не удалось открыть устройство")
                 return
             }
 
             port = driver.ports.firstOrNull()
             if (port == null) {
-                Log.e(TAG, "0000013 У драйвера нет портов")
+                myLog.e(TAG, "0000013 У драйвера нет портов")
                 return
             }
 
             port!!.open(connection)
             port!!.setParameters(9600, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE)
 
-            Log.i(TAG, "0000014 Порт открыт, запускаем чтение")
+            myLog.i(TAG, "0000014 Порт открыт, запускаем чтение")
             startReadingLoop()
         } catch (e: Exception) {
-            Log.e(TAG, "0000015 Ошибка открытия: ${e.message}", e)
+            myLog.e(TAG, "0000015 Ошибка открытия: ${e.message}")
         }
     }
 
+    private val buffer = StringBuilder()
     /**
      * Бесконечный цикл чтения данных с устройства
      */
@@ -198,25 +199,26 @@ class UsbForegroundService : Service() {
             while (isActive) {
                 try {
                     val len = port?.read(buf, 2000) ?: 0
-                    Log.i(TAG, "1100016--- Прочитано ")
                     if (len > 0) {
                         val dataBytes = buf.copyOf(len)
-                        val hex = dataBytes.toHex()
-                        Log.i(TAG, "1100016 Прочитано ($len): $hex")
+                        val chunk  = dataBytes.toHex()
+                        if (chunk.startsWith("23") && buffer.length > 2) {
+                            // закончили предыдущее
+                            val message = buffer.toString()
+                            buffer.clear()
 
-                        repository.sendBinaryData(hex)
+                            repository.sendBinaryData(message)
+                            myLog.e(TAG, "!!!!! ${message} !!!!!")
+                        }
+                        buffer.append(chunk)
 
-                        // Отправляем broadcast с данными
-                        val intent = Intent("USB_DATA_RECEIVED")
-                        intent.putExtra("data", hex)
-                        intent.putExtra("length", len)
-                        sendBroadcast(intent)
                     }
                 } catch (io: IOException) {
-                    Log.e(TAG, "0000017 Ошибка чтения: ${io.message}")
+                    myLog.e(TAG, "0000017 Ошибка чтения: ${io.message}")
+                    
                     delay(1000)
                 } catch (e: Exception) {
-                    Log.e(TAG, "0000018 Общая ошибка в цикле чтения: ${e.message}")
+                    myLog.e(TAG, "0000018 Общая ошибка в цикле чтения: ${e.message}")
                     delay(1000)
                 }
             }
@@ -230,9 +232,9 @@ class UsbForegroundService : Service() {
         scope.launch {
             try {
                 port?.write(command.toByteArray(), 1000)
-                Log.i(TAG, "0000019 Команда отправлена: $command")
+                myLog.i(TAG, "0000019 Команда отправлена: $command")
             } catch (e: Exception) {
-                Log.e(TAG, "0000020 Ошибка отправки команды: ${e.message}")
+                myLog.e(TAG, "0000020 Ошибка отправки команды: ${e.message}")
             }
         }
     }
@@ -241,12 +243,12 @@ class UsbForegroundService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.i(TAG, "0000021 Сервис уничтожается")
+        myLog.i(TAG, "0000021 Сервис уничтожается")
 
         try {
             unregisterReceiver(permissionReceiver)
         } catch (e: Exception) {
-            Log.e(TAG, "0000022 Ошибка при отмене регистрации receiver: ${e.message}")
+            myLog.e(TAG, "0000022 Ошибка при отмене регистрации receiver: ${e.message}")
         }
 
         scope.cancel()
@@ -254,7 +256,7 @@ class UsbForegroundService : Service() {
         try {
             port?.close()
         } catch (e: Exception) {
-            Log.e(TAG, "0000023 Ошибка закрытия порта: ${e.message}")
+            myLog.e(TAG, "0000023 Ошибка закрытия порта: ${e.message}")
         }
 
         connection?.close()

@@ -62,8 +62,8 @@ import coil.compose.rememberImagePainter
 import coil.decode.DataSource
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.example.SCRA.Destination
 import com.example.SCRA.NavHostViewModel
+import com.example.SCRA.navigation.Destination
 import com.example.SCRA.screens.auth.AuthViewModel
 
 import java.io.File
