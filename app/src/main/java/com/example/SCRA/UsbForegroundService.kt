@@ -196,9 +196,10 @@ class UsbForegroundService : Service() {
     private fun startReadingLoop() {
         scope.launch {
             val buf = ByteArray(1024)
+            var mem_code = "123";
             while (isActive) {
                 try {
-                    val len = port?.read(buf, 2000) ?: 0
+                    val len = port?.read(buf, 100) ?: 0
                     if (len > 0) {
                         val dataBytes = buf.copyOf(len)
                         val chunk  = dataBytes.toHex()
@@ -206,8 +207,14 @@ class UsbForegroundService : Service() {
                             // закончили предыдущее
                             val message = buffer.toString()
                             buffer.clear()
-
-                            repository.sendBinaryData(message)
+                            myLog.e(TAG, "====== ${message} ======")
+                            if (message.length == 28){ // отправлять только длинну кода карты
+                                if (mem_code != message){ // не отправлять один и тотже код многократно
+                                    repository.sendBinaryData(message,"FR_Code") // регистрация прохода не взирая на отображение
+                                    repository.setValueCode(message)
+                                    mem_code = message
+                                }
+                            }
                             myLog.e(TAG, "!!!!! ${message} !!!!!")
                         }
                         buffer.append(chunk)
@@ -215,7 +222,7 @@ class UsbForegroundService : Service() {
                     }
                 } catch (io: IOException) {
                     myLog.e(TAG, "0000017 Ошибка чтения: ${io.message}")
-                    
+                    discoverAndRequest()
                     delay(1000)
                 } catch (e: Exception) {
                     myLog.e(TAG, "0000018 Общая ошибка в цикле чтения: ${e.message}")

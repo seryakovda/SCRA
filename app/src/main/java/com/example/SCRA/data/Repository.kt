@@ -9,8 +9,11 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.SCRA.data.ItemPass
+import com.example.SCRA.data.ScraDataStore
+import com.example.SCRA.data.ScraList
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -28,6 +31,7 @@ class Repository @Inject constructor(
     private var context: Context,
     private var remoteSource: RemoteSource,
     private var localSource: LocalSource,
+    private var tireDataStore: ScraDataStore
 ) {
 
     fun setLogin(login:String)
@@ -99,16 +103,29 @@ class Repository @Inject constructor(
         return localSource.getTokenBoolean("ststusAutorisation")
     }
 
-    suspend fun getDataByQrCode(qrCode:String):List<ItemPass>{
+    suspend fun getDataByQrCode(qrCode:String,typeCode:String):List<ItemPass>{
         var sessionHandle: String
         sessionHandle = getSessionHandle()
-        return remoteSource.getDataByQrCode(qrCode,sessionHandle)
+        return remoteSource.getDataByQrCode(qrCode,typeCode,sessionHandle)
     }
 
-    suspend fun sendBinaryData(binaryData:String){
+    suspend fun sendBinaryData(binaryData:String,typeCode:String){
         var sessionHandle: String
         sessionHandle = getSessionHandle()
-        remoteSource.sendBinaryData(binaryData,sessionHandle)
+        remoteSource.sendBinaryData(binaryData,typeCode,sessionHandle)
+    }
+
+
+    suspend fun setValueCode(value:String){
+        tireDataStore.setValueCode(value)
+    }
+    suspend fun getValueCode(): Flow<ScraList?> {
+       return tireDataStore.getValueCode()
+    }
+
+
+    suspend fun setValueTypeCode(value:String){
+        tireDataStore.setValueTypeCode(value)
     }
 }
 

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -51,6 +52,7 @@ import androidx.compose.ui.unit.sp
 
 import com.example.SCRA.R
 import com.example.SCRA.data.ItemPass
+import com.example.SCRA.data.ScraList
 import kotlinx.coroutines.launch
 import qrscanner.QrScanner
 
@@ -70,13 +72,26 @@ fun mainEditContent(
 
     val coroutineScope = rememberCoroutineScope()
 
+    var statusPass = "OK";
+    var colorPass = "#FFFFFF";
+    var urlPhoto = ""
+
+    // смотрим в первый элемент и получаем из него базовые настройки для отображения
+    if (dataByQrCode != null && dataByQrCode.isNotEmpty()) {
+        val firstItem = dataByQrCode[0]
+         statusPass = firstItem.name;
+         colorPass = firstItem.color;
+         urlPhoto = firstItem.value;
+    }
+    colorPass = colorPass.replace("#", "FF")
+
     Box(modifier = Modifier
         .fillMaxSize()
         .statusBarsPadding()) {
         Column(
             modifier = Modifier
-                .background(color = Color.White)
-                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .background(color = Color(colorPass.toLong(radix = 16)))
+                //.windowInsetsPadding(WindowInsets.safeDrawing)
                 .fillMaxSize(),
             //verticalArrangement = Arrangement.Center,
             //horizontalAlignment = Alignment.CenterHorizontally
@@ -89,85 +104,126 @@ fun mainEditContent(
 //                    verticalArrangement = Arrangement.Center,
 //                    horizontalAlignment = Alignment.CenterHorizontally
 //                ) {
-            Box(
-                modifier = Modifier
-                    .padding(start = 20.dp, end = 20.dp, top = 30.dp)
-                    .background(
-                        color = Color(0xFFF9F9F9),
-                        shape = RoundedCornerShape(25.dp)
-                    )
-                    .height(35.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Row(
+            Row{
+                Box(
                     modifier = Modifier
-                        .padding(vertical = 5.dp, horizontal = 18.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(11.dp)
+                        .height(300.dp)
+                        .width(225.dp)
+                        .border(2.dp, Color.Blue, RoundedCornerShape(size = 14.dp)),
                 ) {
-                    //Icon(imageVector = if (flashlightOn) Icons.Filled.flashOn else Icons.Filled.FlashOff,
-                    Icon( painter =  if (flashlightOn) painterResource(R.drawable.flash0) else painterResource(R.drawable.flash1),
-                        "flash",
+                    // Фотография
+                }
+                Column {
+                    Box( // окно для QrScanner
                         modifier = Modifier
-                            .size(24.dp)
+                            .size(150.dp)
+                            .clip(shape = RoundedCornerShape(size = 14.dp))
+                            .clipToBounds()
+                            .border(2.dp, Color.Gray, RoundedCornerShape(size = 14.dp)),
+                        //contentAlignment = Alignment.Center
+                    ) {
+                        QrScanner(
+                            modifier = Modifier
+                                .clipToBounds()
+                                .clip(shape = RoundedCornerShape(size = 14.dp)),
+                            flashlightOn = flashlightOn,
+                            launchGallery = launchGallery,
+                            onCompletion = {
+
+                                getDataByQrCode(it)
+                                //qrCodeURL = it
+
+                                startBarCodeScan = false
+                            },
+                            onGalleryCallBackHandler = {
+                                launchGallery = it
+                            },
+                            onFailure = {
+                                coroutineScope.launch {
+                                    if (it.isEmpty()) {
+                                        snackBarHostState.showSnackbar("Испорченный Qr-КОД")
+                                    } else {
+                                        snackBarHostState.showSnackbar(it)
+                                    }
+                                }
+                            }
+                        )
+                    }
+
+                    Box( // тумблер фонарика
+                        modifier = Modifier
+                            //.padding(start = 20.dp, end = 20.dp, top = 30.dp)
+                            .background(
+                                color = Color(0xFF3e9dfb),// #
+                                shape = RoundedCornerShape(25.dp)
+                            )
+                            .height(50.dp)
+                            .width(200.dp)
+                        ,
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon( painter =  if (flashlightOn) painterResource(R.drawable.flash0) else painterResource(R.drawable.flash1),
+                            "flash",
+                            modifier = Modifier
+                                .size(50.dp)
+                                .clickable {
+                                    flashlightOn = !flashlightOn
+                                })
+                    }
+
+                    var colorExit1 =   if (flashlightOn) Color.Green else Color.Gray
+                    var colorExit2 =   if (flashlightOn)  Color.Gray else Color.Green
+                    var color2Exit1 =   if (flashlightOn) Color.Red else Color.White
+                    var color2Exit2 =   if (flashlightOn)  Color.White else Color.Red
+
+                    Box( // тумблер Прохода
+                        modifier = Modifier
+                            //.padding(start = 20.dp, end = 20.dp, top = 30.dp)
+                            .background(
+                                color = colorExit1,
+                                shape = RoundedCornerShape(25.dp)
+                            )
+                            .height(50.dp)
+                            .width(200.dp)
                             .clickable {
-                                flashlightOn = !flashlightOn
-                            })
-
-                    VerticalDivider(
-                        modifier = Modifier,
-                        thickness = 1.dp,
-                        color = Color(0xFFD8D8D8)
-                    )
-
-//                            Image(
-//                                painter = painterResource(R.drawable.ic_gallery_icon),
-//                                contentDescription = "gallery",
-//                                contentScale = ContentScale.Fit,
-//                                modifier = Modifier
-//                                    .size(24.dp)
-//                                    .clickable {
-//                                        launchGallery = true
-//                                    }
-//                            )
+                                flashlightOn = true
+                            }
+                        ,
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(modifier = Modifier
+                            , text = "Вход"
+                            ,color = color2Exit1
+                            ,fontSize = 20.sp
+                        )
+                    }
+                    Box( // тумблер Прохода
+                        modifier = Modifier
+                            //.padding(start = 20.dp, end = 20.dp, top = 30.dp)
+                            .background(
+                                color = colorExit2,
+                                shape = RoundedCornerShape(25.dp)
+                            )
+                            .height(50.dp)
+                            .width(200.dp)
+                            .clickable {
+                                flashlightOn = false
+                            }
+                        ,
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(modifier = Modifier
+                            , text = "Выход"
+                            ,color = color2Exit2
+                            ,fontSize = 20.sp
+                        )
+                    }
                 }
             }
-            Box(
-                modifier = Modifier
-                    .size(50.dp)
-                    .clip(shape = RoundedCornerShape(size = 14.dp))
-                    .clipToBounds()
-                    .border(2.dp, Color.Gray, RoundedCornerShape(size = 14.dp)),
-                //contentAlignment = Alignment.Center
-            ) {
-                QrScanner(
-                    modifier = Modifier
-                        .clipToBounds()
-                        .clip(shape = RoundedCornerShape(size = 14.dp)),
-                    flashlightOn = flashlightOn,
-                    launchGallery = launchGallery,
-                    onCompletion = {
 
-                        getDataByQrCode(it)
-                        //qrCodeURL = it
 
-                        startBarCodeScan = false
-                    },
-                    onGalleryCallBackHandler = {
-                        launchGallery = it
-                    },
-                    onFailure = {
-                        coroutineScope.launch {
-                            if (it.isEmpty()) {
-                                snackBarHostState.showSnackbar("Испорченный Qr-КОД")
-                            } else {
-                                snackBarHostState.showSnackbar(it)
-                            }
-                        }
-                    }
-                )
-            }
 
+            printPass(dataByQrCode)
 
                 //}
 //            } else {
@@ -199,20 +255,20 @@ fun mainEditContent(
         }
 
 
-        if (startBarCodeScan) {
-            Icon(
-                imageVector = Icons.Filled.Close,
-                "Close",
-                modifier = Modifier
-                    .padding(top = 12.dp, end = 12.dp)
-                    .size(24.dp)
-                    .clickable {
-                        startBarCodeScan = false
-                    }
-                    .align(Alignment.TopEnd),
-                tint = Color.White
-            )
-        }
+//        if (startBarCodeScan) {
+//            Icon(
+//                imageVector = Icons.Filled.Close,
+//                "Close",
+//                modifier = Modifier
+//                    .padding(top = 12.dp, end = 12.dp)
+//                    .size(24.dp)
+//                    .clickable {
+//                        startBarCodeScan = false
+//                    }
+//                    .align(Alignment.TopEnd),
+//                tint = Color.White
+//            )
+//        }
     }
 
 }
