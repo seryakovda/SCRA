@@ -92,6 +92,21 @@ class RemoteSource @Inject constructor(private val client: HttpClient) {
     }
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
+    suspend fun testConnection(): Boolean
+    {
+        val requestSessionUrl =
+            "r0=SYS" +
+                    "&r1=registrationKeyAPI" +
+                    "&keyAPI=$keyAPI";
+        var requestTxt = "http://$IpRemoteServer/index_ajax.php?" + requestSessionUrl
+
+        var retStatus = ControlHttpResponse(httpResponse = null, error = true)
+        Log.i("testConnection", requestTxt)
+        retStatus = statusRequest(requestTxt)
+        return retStatus.error
+    }
+////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
     suspend fun requestSession(): String {
         val requestSessionUrl = 
                 "r0=SYS" +

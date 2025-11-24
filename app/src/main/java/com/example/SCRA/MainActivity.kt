@@ -16,13 +16,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.compose.rememberNavController
 import com.example.SCRA.navigation.AppNavHost
 import com.example.SCRA.ui.theme.SCRATheme
+import com.example.tire.data.Repository
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
     private var usbService: UsbForegroundService? = null
     private var isBound = false
 
@@ -70,14 +78,14 @@ class MainActivity : ComponentActivity() {
         } else {
             registerReceiver(usbDataReceiver, IntentFilter("USB_DATA_RECEIVED"))
         }
-
         setContent {
             SCRATheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavHost()
+                    val navController = rememberNavController()
+                    AppNavHost(navController)
                 }
             }
         }
@@ -106,6 +114,7 @@ class MainActivity : ComponentActivity() {
         }
         unregisterReceiver(usbDataReceiver)
     }
+
 
     private fun startUsbService() {
         try {

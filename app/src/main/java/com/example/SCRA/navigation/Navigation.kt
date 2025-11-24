@@ -2,6 +2,7 @@ package com.example.SCRA.navigation
 
 import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -18,20 +19,31 @@ import com.example.tire.screens.auth.loading.LoadingScreen1
 @SuppressLint("RestrictedApi")
 @Composable
 fun AppNavHost(
-    navController: NavHostController = rememberNavController(),
-    startDestination: String = Destination.AuthScreen.route
+    navController: NavHostController,
+    startDestination: String = Destination.LoadingScreen.route
 ) {
     val navHostViewModel = hiltViewModel<NavHostViewModel>()
-    val viewModel = hiltViewModel<AuthViewModel>()
-
     val state = navHostViewModel.authState.observeAsState()
-    when (state.value) {
-        NavHostViewModel.AuthState.LOADING -> navController.navigate(Destination.LoadingScreen.route)
-        NavHostViewModel.AuthState.FAIL -> navController.navigate(Destination.AuthScreenError.route)
-        NavHostViewModel.AuthState.AUTH -> navController.popBackStack()
-        NavHostViewModel.AuthState.SUCCESS -> navController.navigate(Destination.ScreenMainJob.route)
-        NavHostViewModel.AuthState.EDIT -> navController.navigate(Destination.ScreenEdit.route)
-        else -> {}
+
+    LaunchedEffect(state.value) {
+        when (state.value) {
+            NavHostViewModel.AuthState.LOADING ->
+                navController.navigate(Destination.LoadingScreen.route)
+
+            NavHostViewModel.AuthState.FAIL ->
+                navController.navigate(Destination.AuthScreenError.route)
+
+            NavHostViewModel.AuthState.AUTH ->
+                navController.navigate(Destination.AuthScreen.route)
+
+            NavHostViewModel.AuthState.SUCCESS ->
+                navController.navigate(Destination.ScreenMainJob.route)
+
+            NavHostViewModel.AuthState.EDIT ->
+                navController.navigate(Destination.ScreenEdit.route)
+
+            else -> {}
+        }
     }
 
     NavHost(
@@ -39,20 +51,19 @@ fun AppNavHost(
         startDestination = startDestination
     ) {
         composable(Destination.LoadingScreen.route) {
-            LoadingScreen1(navController = navController)
+            LoadingScreen1(navController)
         }
 
         composable(Destination.AuthScreen.route) {
-            AuthScreen2(navController = navController)
+            AuthScreen2(navController)
         }
 
         composable(Destination.AuthScreenError.route) {
-            AuthScreenError(navController = navController)
+            AuthScreenError(navController)
         }
 
         composable(Destination.ScreenEdit.route) {
-            mainEditScreen(navController = navController)
+            mainEditScreen(navController)
         }
-
     }
 }

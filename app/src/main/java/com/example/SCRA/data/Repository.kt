@@ -33,6 +33,10 @@ class Repository @Inject constructor(
     private var localSource: LocalSource,
     private var tireDataStore: ScraDataStore
 ) {
+    suspend fun testConnection(): Boolean
+    {
+        return remoteSource.testConnection()
+    }
 
     fun setLogin(login:String)
     {

@@ -23,5 +23,9 @@ fun LoadingScreen1(
         navigateToAuth = { navController.navigate(Destination.AuthScreen.route) },
         navigateToSuccess = { navController.navigate(Destination.ScreenEdit.route) }
     )
+
+    viewModel.testConnection(
+        navController
+    )
 }
 

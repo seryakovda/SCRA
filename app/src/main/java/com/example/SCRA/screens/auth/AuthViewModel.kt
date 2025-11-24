@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.example.SCRA.NavHostViewModel
+import com.example.SCRA.navigation.Destination
 
 import com.example.tire.data.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -48,6 +49,22 @@ class AuthViewModel @Inject constructor(
     fun getIdDoor():String
     {
         return repository.getIdDoor();
+    }
+
+
+    fun testConnection(
+        navController: NavController
+    ) {
+        Log.i("testConnection", "Start")
+        viewModelScope.launch(Dispatchers.IO) {
+            if (repository.testConnection()){
+                Log.i("testConnection", "True")
+                navController.navigate(Destination.ScreenEdit.route)
+            }else{
+                Log.i("testConnection", "false")
+                navController.navigate(Destination.AuthScreenError.route)
+            }
+        }
     }
 
     fun autorisation(login: String, pass: String, IpServer: String, IdDoor: String){
