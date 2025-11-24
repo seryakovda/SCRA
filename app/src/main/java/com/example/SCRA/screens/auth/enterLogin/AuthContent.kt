@@ -32,12 +32,16 @@ fun AuthContent(
     authState: NavHostViewModel.AuthState = NavHostViewModel.AuthState.AUTH,
     navigateToError: () -> Unit = { },
     navigateToSuccess: () -> Unit = { },
-    auth: (login: String, password: String) -> Unit = { login, password -> },
+    auth: (login: String, password: String, IpServer: String, IdDoor: String) -> Unit = { login, password, IpServer, IdDoor -> },
     login0:String = "",
-    password0:String = ""
+    password0:String = "",
+    IpServer0:String = "",
+    IdDoor0:String = ""
 ) {
     val login = remember { mutableStateOf(login0) }
     val pass = remember { mutableStateOf(password0) }
+    val IpServer = remember { mutableStateOf(IpServer0) }
+    val IdDoor = remember { mutableStateOf(IdDoor0) }
 
     LaunchedEffect(authState) {
         when (authState) {
@@ -109,6 +113,15 @@ fun AuthContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 TextField(
+                    label = { Text(text = "Сервер") },
+                    value = IpServer.value
+                    ,modifier = Modifier
+                        .width(200.dp)
+                    ,textStyle = TextStyle(fontSize = 20.sp)
+                    ,colors = TextFieldDefaults.textFieldColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                    ,onValueChange = { ti -> IpServer.value = ti }
+                )
+                TextField(
                     label = { Text(text = "Логин") },
                     value = login.value
                     ,modifier = Modifier
@@ -131,12 +144,21 @@ fun AuthContent(
                     ,visualTransformation = PasswordVisualTransformation()
 
                 )
+                TextField(
+                    label = { Text(text = "Дверь") },
+                    value = IdDoor.value
+                    ,modifier = Modifier
+                        .width(200.dp)
+                    ,textStyle = TextStyle(fontSize = 20.sp)
+                    ,colors = TextFieldDefaults.textFieldColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                    ,onValueChange = { ti -> IdDoor.value = ti }
+                )
             }
         }
 
         Row(modifier = Modifier.padding(all = 30.dp)) {
             Button(onClick = {
-                auth(login.value, pass.value)
+                auth(login.value, pass.value,IpServer.value,IdDoor.value)
 
             }) {
                 Text("Вход", fontSize = 18.sp)

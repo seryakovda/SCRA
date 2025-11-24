@@ -106,4 +106,8 @@ class EditViewModel @Inject constructor(
         super.onCleared()
         releaseMediaPlayer()
     }
+
+    fun setStateInOut(inOut:Boolean){
+        repository.setStateInOut(inOut)
+    }
 }

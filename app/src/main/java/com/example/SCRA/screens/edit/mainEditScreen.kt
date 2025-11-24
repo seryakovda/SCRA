@@ -22,7 +22,8 @@ fun mainEditScreen(
 
     mainEditContent(
         dataByQrCode = dataByQrCode,
-        getDataByQrCode = viewModel::getDataByQrCode
+        getDataByQrCode = viewModel::getDataByQrCode,
+        setStateInOut = viewModel::setStateInOut
     )
 //    val authState by viewModel._authState.observeAsState(NavHostViewModel.AuthState.AUTH)
 //

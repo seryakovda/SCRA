@@ -1,5 +1,6 @@
 package com.example.tire.data
 import android.util.Log
+import com.example.SCRA.AppState1.IpRemoteServer
 import com.example.SCRA.ConstApp.keyAPI
 import com.example.SCRA.ConstApp.urlRemoteServer
 import com.example.SCRA.data.ItemPass
@@ -65,7 +66,7 @@ class RemoteSource @Inject constructor(private val client: HttpClient) {
             requestTxt = requestTxt.replace(":","%3A")
             requestTxt = requestTxt.replace(".","%2E")
             
-            requestTxt = "$urlRemoteServer?" + requestTxt
+            requestTxt = "http://$IpRemoteServer/index_ajax.php?" + requestTxt
     
             //Log.i("MyMSG",requestTxt)
         var retStatus = ControlHttpResponse(httpResponse = null, error = true)
@@ -129,12 +130,13 @@ class RemoteSource @Inject constructor(private val client: HttpClient) {
 
     }
 
-    suspend fun getDataByQrCode(qrCode:String,typeCode:String, sessionHandle: String):List<ItemPass>{
+    suspend fun getDataByQrCode(qrCode:String,typeCode:String,inOut:String, sessionHandle: String):List<ItemPass>{
         val requestTxt =
             "r0=SYS" +
                     "&r1=getDataByQrCode" +
                     "&qrCode=$qrCode" +
                     "&typeCode=$typeCode" +
+                    "&inOut=$inOut" +
                     "&sessionHandle=$sessionHandle"
         val response = myRequest(requestTxt)
         Log.v("MyMSG",response.body<String>().toString())

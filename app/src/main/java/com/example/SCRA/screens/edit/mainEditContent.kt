@@ -61,10 +61,12 @@ import qrscanner.QrScanner
 fun mainEditContent(
     dataByQrCode:List<ItemPass>?,
     getDataByQrCode: (qrCode: String) -> Unit = { qrCode->},
+    setStateInOut: (inOut : Boolean) -> Unit = {inOut ->}
 ){
     var qrCodeURL by remember { mutableStateOf("") }
     var startBarCodeScan by remember { mutableStateOf(false) }
     var flashlightOn by remember { mutableStateOf(false) }
+    var inOut by remember { mutableStateOf(false) }
     var launchGallery by remember { mutableStateOf(value = false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -171,10 +173,10 @@ fun mainEditContent(
                                 })
                     }
 
-                    var colorExit1 =   if (flashlightOn) Color.Green else Color.Gray
-                    var colorExit2 =   if (flashlightOn)  Color.Gray else Color.Green
-                    var color2Exit1 =   if (flashlightOn) Color.Red else Color.White
-                    var color2Exit2 =   if (flashlightOn)  Color.White else Color.Red
+                    var colorExit1 =   if (inOut) Color.Green else Color.Gray
+                    var colorExit2 =   if (inOut)  Color.Gray else Color.Green
+                    var color2Exit1 =   if (inOut) Color.Red else Color.White
+                    var color2Exit2 =   if (inOut)  Color.White else Color.Red
 
                     Box( // тумблер Прохода
                         modifier = Modifier
@@ -186,7 +188,8 @@ fun mainEditContent(
                             .height(50.dp)
                             .width(200.dp)
                             .clickable {
-                                flashlightOn = true
+                                inOut = true
+                                setStateInOut(inOut)
                             }
                         ,
                         contentAlignment = Alignment.Center
@@ -207,7 +210,8 @@ fun mainEditContent(
                             .height(50.dp)
                             .width(200.dp)
                             .clickable {
-                                flashlightOn = false
+                                inOut = false
+                                setStateInOut(inOut)
                             }
                         ,
                         contentAlignment = Alignment.Center

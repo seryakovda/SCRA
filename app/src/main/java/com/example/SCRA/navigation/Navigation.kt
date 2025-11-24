@@ -13,6 +13,7 @@ import com.example.SCRA.screens.auth.AuthViewModel
 import com.example.SCRA.screens.edit.mainEditScreen
 import com.example.tire.screens.auth.authError.AuthScreenError
 import com.example.tire.screens.auth.enterLogin.AuthScreen2
+import com.example.tire.screens.auth.loading.LoadingScreen1
 
 @SuppressLint("RestrictedApi")
 @Composable
@@ -25,6 +26,7 @@ fun AppNavHost(
 
     val state = navHostViewModel.authState.observeAsState()
     when (state.value) {
+        NavHostViewModel.AuthState.LOADING -> navController.navigate(Destination.LoadingScreen.route)
         NavHostViewModel.AuthState.FAIL -> navController.navigate(Destination.AuthScreenError.route)
         NavHostViewModel.AuthState.AUTH -> navController.popBackStack()
         NavHostViewModel.AuthState.SUCCESS -> navController.navigate(Destination.ScreenMainJob.route)
@@ -36,6 +38,10 @@ fun AppNavHost(
         navController = navController,
         startDestination = startDestination
     ) {
+        composable(Destination.LoadingScreen.route) {
+            LoadingScreen1(navController = navController)
+        }
+
         composable(Destination.AuthScreen.route) {
             AuthScreen2(navController = navController)
         }
@@ -47,5 +53,6 @@ fun AppNavHost(
         composable(Destination.ScreenEdit.route) {
             mainEditScreen(navController = navController)
         }
+
     }
 }

@@ -50,6 +50,34 @@ class Repository @Inject constructor(
     {
         localSource.saveTokenString("password",password)
     }
+
+    fun setIpServer(value:String)
+    {
+        localSource.saveTokenString("IpServer",value)
+    }
+
+    fun setIdDoor(value:String)
+    {
+        localSource.saveTokenString("IdDoor",value)
+    }
+
+    fun getIpServer():String
+    {
+        var value = localSource.getTokenString("IpServer");
+        if (value == null)
+            value = ""
+        return value
+    }
+
+    fun getIdDoor():String
+    {
+        var value = localSource.getTokenString("IdDoor");
+        if (value == null)
+            value = ""
+        return value
+    }
+
+
     fun getPassword():String
     {
         var login = localSource.getTokenString("password");
@@ -106,7 +134,9 @@ class Repository @Inject constructor(
     suspend fun getDataByQrCode(qrCode:String,typeCode:String):List<ItemPass>{
         var sessionHandle: String
         sessionHandle = getSessionHandle()
-        return remoteSource.getDataByQrCode(qrCode,typeCode,sessionHandle)
+        var inOut: String
+        inOut = getStateInOut()
+        return remoteSource.getDataByQrCode(qrCode,typeCode,inOut,sessionHandle)
     }
 
     suspend fun sendBinaryData(binaryData:String,typeCode:String){
@@ -126,6 +156,22 @@ class Repository @Inject constructor(
 
     suspend fun setValueTypeCode(value:String){
         tireDataStore.setValueTypeCode(value)
+    }
+
+    fun setStateInOut(value: Boolean){
+        if (value)
+            localSource.saveTokenString("StateInOut","1")
+        else
+            localSource.saveTokenString("StateInOut","0")
+        localSource.getTokenString("StateInOut")
+    }
+    fun getStateInOut():String{
+        var ret = localSource.getTokenString("StateInOut");
+        if (ret == "") {
+            setStateInOut(true)
+            ret = "1";
+        }
+        return ret;
     }
 }
 

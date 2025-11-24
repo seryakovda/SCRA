@@ -40,12 +40,22 @@ class AuthViewModel @Inject constructor(
     {
         return repository.getPassword();
     }
+    fun getIpServer():String
+    {
+        return repository.getIpServer()
+    }
 
+    fun getIdDoor():String
+    {
+        return repository.getIdDoor();
+    }
 
-    fun autorisation(login: String, pass: String){
+    fun autorisation(login: String, pass: String, IpServer: String, IdDoor: String){
         val path = context.getFilesDir()
         Log.i("MyMSG","autorisation " + path.toString())
         viewModelScope.launch(Dispatchers.IO) {
+            repository.setIpServer(IpServer)
+            repository.setIdDoor(IdDoor)
              repository.autorisation(login, pass)
              if(repository.getStatusAutorisation()) {
                  //navHostViewModel._authState.postValue(NavHostViewModel.AuthState.SUCCESS)
