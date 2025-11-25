@@ -287,12 +287,12 @@ class UsbForegroundService : Service() {
                         if (chunk.startsWith("23") && buffer.length > 2) {
                             val message = buffer.toString()
                             buffer.clear()
-                            myLog.e(TAG, "====== ${message} ======")
+
                             if (message.length == 28) {
-                                    repository.sendBinaryData(message,"FR_Code")
-                                    repository.setValueCode(message)
+                                myLog.e(TAG, "====== ${message} ======")
+                                repository.setValueCode(message)
+                                delay(1000)
                             }
-                            myLog.e(TAG, "!!!!! ${message} !!!!!")
                         }
                         buffer.append(chunk)
                     }

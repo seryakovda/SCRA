@@ -103,7 +103,8 @@ class RemoteSource @Inject constructor(private val client: HttpClient) {
         var retStatus = ControlHttpResponse(httpResponse = null, error = true)
         Log.i("testConnection", requestTxt)
         retStatus = statusRequest(requestTxt)
-        return retStatus.error
+        Log.i("testConnection", retStatus.toString())
+        return !retStatus.error
     }
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -145,7 +146,7 @@ class RemoteSource @Inject constructor(private val client: HttpClient) {
 
     }
 
-    suspend fun getDataByQrCode(qrCode:String,typeCode:String,inOut:String, sessionHandle: String):List<ItemPass>{
+    suspend fun getDataByQrCode(qrCode:String,typeCode:String,inOut:String, sessionHandle: String):String{
         val requestTxt =
             "r0=SYS" +
                     "&r1=getDataByQrCode" +
@@ -155,7 +156,7 @@ class RemoteSource @Inject constructor(private val client: HttpClient) {
                     "&sessionHandle=$sessionHandle"
         val response = myRequest(requestTxt)
         Log.v("MyMSG",response.body<String>().toString())
-        return  response.body<List<ItemPass>>()
+        return  response.body()
     }
 
     suspend fun sendBinaryData(binaryData:String,typeCode:String, sessionHandle: String){

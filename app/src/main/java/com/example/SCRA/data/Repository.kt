@@ -35,7 +35,16 @@ class Repository @Inject constructor(
 ) {
     suspend fun testConnection(): Boolean
     {
-        return remoteSource.testConnection()
+        var resConn = remoteSource.testConnection() //проверяем на сединение
+        if (resConn) {
+            autorisation(getLogin(), getPassword())
+            if(getStatusAutorisation()) { // успешность автризациии
+                resConn = true
+            }else{
+                resConn = false
+            }
+        }
+        return resConn;
     }
 
     fun setLogin(login:String)
@@ -135,31 +144,49 @@ class Repository @Inject constructor(
         return localSource.getTokenBoolean("ststusAutorisation")
     }
 
-    suspend fun getDataByQrCode(qrCode:String,typeCode:String):List<ItemPass>{
+    suspend fun getDataByQrCode(code:String,typeCode:String):Boolean{
         var sessionHandle: String
         sessionHandle = getSessionHandle()
         var inOut: String
         inOut = getStateInOut()
-        return remoteSource.getDataByQrCode(qrCode,typeCode,inOut,sessionHandle)
+        var memCode = localSource.getTokenString("memCode")
+        var memDoor = localSource.getTokenString("memDoor")
+        var memKey = memCode + "_" + memDoor
+        var newKey = code + "_" + inOut
+        if (memKey != newKey) {
+            var responseData = remoteSource.getDataByQrCode(code, typeCode, inOut, sessionHandle)
+            memDataByCode(responseData)
+            localSource.saveTokenString("memCode",code)
+            localSource.saveTokenString("memDoor",inOut)
+            return true
+        }else{
+            return false
+        }
+
+    }
+
+
+    fun memDataByCode(responseData: String){
+        localSource.saveTokenString("responseDataByCode",responseData)
+    }
+
+    fun restoreDataByCode(): List<ItemPass> {
+        val json = localSource.getTokenString("responseDataByCode") ?: return emptyList()
+        return Json.decodeFromString<List<ItemPass>>(json)
     }
 
     suspend fun sendBinaryData(binaryData:String,typeCode:String){
         var sessionHandle: String
         sessionHandle = getSessionHandle()
-        remoteSource.sendBinaryData(binaryData,typeCode,sessionHandle)
+        //remoteSource.sendBinaryData(binaryData,typeCode,sessionHandle)
     }
 
 
     suspend fun setValueCode(value:String){
         tireDataStore.setValueCode(value)
     }
-    suspend fun getValueCode(): Flow<ScraList?> {
+    suspend fun getValueCode(): Flow<String?> {
        return tireDataStore.getValueCode()
-    }
-
-
-    suspend fun setValueTypeCode(value:String){
-        tireDataStore.setValueTypeCode(value)
     }
 
     fun setStateInOut(value: Boolean){

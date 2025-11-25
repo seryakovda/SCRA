@@ -28,9 +28,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
@@ -39,75 +42,64 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditViewModel @Inject constructor(
-    private var repository: Repository,
-    private var context: Context
-): ViewModel() {
-
-   // val scraList: MutableLiveData<List<ScraList>> = MutableLiveData()
+    private val repository: Repository,
+    private val context: Context
+) : ViewModel() {
 
     val dataByQrCode: MutableLiveData<List<ItemPass>?> = MutableLiveData()
     private var job: Job? = null
-//    val f = listOf(1, 2, 3).asFlow()
-//
-//    val qr = f.stateIn(
-//        scope = viewModelScope,
-//        started = SharingStarted.WhileSubscribed(5000),
-//        initialValue = 0
-//    )
-    fun getDataByQrCode(qrCode:String){
-        dataByQrCode.postValue(null)
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.sendBinaryData(qrCode,"QR_Code") // регистрация прохода не взирая на отображение
-            dataByQrCode.postValue(repository.getDataByQrCode(qrCode,"QR_Code"))
+    private var isListening = false
 
-            playSound()
+    fun getDataByQrCode(qrCode: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.sendBinaryData(qrCode, "QR_Code")
+            if (repository.getDataByQrCode(qrCode, "QR_Code")) {
+                dataByQrCode.postValue(repository.restoreDataByCode())
+                playSound()
+            }
         }
     }
 
-    fun getDataByQrCode2(){
-        dataByQrCode.postValue(null)
-        job?.cancel()
+    fun startListeningUsbCodes() {
+        if (isListening) return  // Слушатель уже запущен
+        isListening = true
+
         job = viewModelScope.launch(Dispatchers.IO) {
-            repository.getValueCode().collect { scraList ->
-                myLog.e("UsbForegroundService", scraList.toString())
-                scraList?.let {
-                    dataByQrCode.postValue(repository.getDataByQrCode(it.code,"FR_Code"))
-                    playSound()
+            repository.getValueCode()
+                .distinctUntilChanged()
+                .collect { value ->
+                    value?.let {
+                        if (repository.getDataByQrCode(it, "FR_Code")) {
+                            dataByQrCode.postValue(repository.restoreDataByCode())
+                            playSound()
+                        }
+                    }
                 }
-            }
         }
     }
 
     private var mediaPlayer: MediaPlayer? = null
 
     fun playSound() {
-        // Создаем MediaPlayer с передачей контекста
-        mediaPlayer = MediaPlayer.create(context, R.raw.payment_succes)
-
-        // Проверяем успешность создания
-        mediaPlayer?.let {
-            it.setOnCompletionListener {
-                // Освобождаем ресурсы после завершения
-                releaseMediaPlayer()
-            }
-            it.start()
+        mediaPlayer?.release()
+        mediaPlayer = MediaPlayer.create(context, R.raw.payment_succes).apply {
+            setOnCompletionListener { releaseMediaPlayer() }
+            start()
         }
     }
 
     private fun releaseMediaPlayer() {
-        mediaPlayer?.let {
-            it.release()
-            mediaPlayer = null
-        }
+        mediaPlayer?.release()
+        mediaPlayer = null
     }
 
-    // Освобождаем ресурсы при уничтожении ViewModel
     override fun onCleared() {
         super.onCleared()
+        job?.cancel()
         releaseMediaPlayer()
     }
 
-    fun setStateInOut(inOut:Boolean){
+    fun setStateInOut(inOut: Boolean) {
         repository.setStateInOut(inOut)
     }
 }

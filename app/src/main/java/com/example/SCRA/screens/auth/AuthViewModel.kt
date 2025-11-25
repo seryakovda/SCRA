@@ -20,6 +20,7 @@ import com.example.tire.data.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 
@@ -52,17 +53,20 @@ class AuthViewModel @Inject constructor(
     }
 
 
-    fun testConnection(
-        navController: NavController
-    ) {
+    fun testConnection(navController: NavController) {
         Log.i("testConnection", "Start")
-        viewModelScope.launch(Dispatchers.IO) {
-            if (repository.testConnection()){
+        viewModelScope.launch {
+            val isConnected = withContext(Dispatchers.IO) {
+                repository.testConnection()
+            }
+
+            // Навигация в главном потоке
+            if (isConnected) {
                 Log.i("testConnection", "True")
                 navController.navigate(Destination.ScreenEdit.route)
-            }else{
+            } else {
                 Log.i("testConnection", "false")
-                navController.navigate(Destination.AuthScreenError.route)
+                navController.navigate(Destination.AuthScreen.route)
             }
         }
     }

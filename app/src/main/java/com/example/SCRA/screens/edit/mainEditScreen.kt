@@ -16,8 +16,8 @@ fun mainEditScreen(
 ) {
     val dataByQrCode by viewModel.dataByQrCode.observeAsState()
 
-    LaunchedEffect(null) {
-        viewModel.getDataByQrCode2()
+    LaunchedEffect(Unit) {
+        viewModel.startListeningUsbCodes()  // один раз при создании
     }
 
     mainEditContent(
@@ -25,21 +25,4 @@ fun mainEditScreen(
         getDataByQrCode = viewModel::getDataByQrCode,
         setStateInOut = viewModel::setStateInOut
     )
-//    val authState by viewModel._authState.observeAsState(NavHostViewModel.AuthState.AUTH)
-//
-//
-//
-//    AuthContent(
-//        authState = authState,
-//        navigateToError = { navController.navigate(Destination.AuthScreenError.route) },
-//        navigateToSuccess = { navController.navigate(Destination.ScreenMainJob.route) },
-//        auth = viewModel::autorisation,
-//        login0 = viewModel.getLogin(),
-//        password0 = viewModel.getPassword()
-//    )
-//
-//    if (authState == NavHostViewModel.AuthState.SUCCESS){
-//        viewModel.upload()
-//    }
 }
-
