@@ -158,12 +158,13 @@ fun mainEditContent(
                             flashlightOn = flashlightOn,
                             launchGallery = launchGallery,
                             onCompletion = { code ->
-                                startBarCodeScan = false
-
-                                // Даем камере корректно закрыться
+                                // <<< Замедление >>>>
                                 coroutineScope.launch {
-                                    delay(1000)
-                                    getDataByQrCode(code)
+                                    delay(120)                // ключевая задержка
+
+                                    startBarCodeScan = false  // состояние меняем ПОСЛЕ задержки
+
+                                    getDataByQrCode(code)     // можно вызвать сразу
                                 }
                             },
                             onGalleryCallBackHandler = {
