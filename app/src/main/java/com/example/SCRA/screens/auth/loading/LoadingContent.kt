@@ -37,19 +37,7 @@ import com.example.SCRA.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoadingContent(
-    authState: NavHostViewModel.AuthState = NavHostViewModel.AuthState.LOADING,
-    navigateToAuth: () -> Unit = { },
-    navigateToSuccess: () -> Unit = { },
-) {
-     LaunchedEffect(authState) {
-        when (authState) {
-            NavHostViewModel.AuthState.SUCCESS -> navigateToSuccess()
-            NavHostViewModel.AuthState.FAIL -> navigateToAuth()
-            else -> { }
-        }
-    }
-
+fun LoadingContent() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -65,17 +53,17 @@ fun LoadingContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Простой способ без внешних библиотек
-        AndroidView(
-            factory = { context ->
-                ImageView(context).apply {
-                    setImageResource(R.drawable.loading)
-                    scaleType = ImageView.ScaleType.FIT_CENTER
-                }
-            },
-            modifier = Modifier
-                .size(120.dp)
-                .padding(16.dp)
-        )
+//        AndroidView(
+//            factory = { context ->
+//                ImageView(context).apply {
+//                    setImageResource(R.drawable.loading)
+//                    scaleType = ImageView.ScaleType.FIT_CENTER
+//                }
+//            },
+//            modifier = Modifier
+//                .size(120.dp)
+//                .padding(16.dp)
+//        )
 
         Text(
             text = "Загрузка...",

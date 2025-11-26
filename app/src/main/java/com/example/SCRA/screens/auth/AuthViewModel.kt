@@ -52,25 +52,6 @@ class AuthViewModel @Inject constructor(
         return repository.getIdDoor();
     }
 
-
-    fun testConnection(navController: NavController) {
-        Log.i("testConnection", "Start")
-        viewModelScope.launch {
-            val isConnected = withContext(Dispatchers.IO) {
-                repository.testConnection()
-            }
-
-            // Навигация в главном потоке
-            if (isConnected) {
-                Log.i("testConnection", "True")
-                navController.navigate(Destination.ScreenEdit.route)
-            } else {
-                Log.i("testConnection", "false")
-                navController.navigate(Destination.AuthScreen.route)
-            }
-        }
-    }
-
     fun autorisation(login: String, pass: String, IpServer: String, IdDoor: String){
         val path = context.getFilesDir()
         Log.i("MyMSG","autorisation " + path.toString())

@@ -40,13 +40,13 @@ class MainActivity : ComponentActivity() {
             val binder = service as UsbForegroundService.UsbServiceBinder
             usbService = binder.getService()
             isBound = true
-            Log.i("MainActivity", "USB сервис подключен")
+            Log.i("MainActivity", "USB service ON")
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
             usbService = null
             isBound = false
-            Log.i("MainActivity", "USB сервис отключен")
+            Log.i("MainActivity", "USB service off")
         }
     }
 
@@ -84,8 +84,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val navController = rememberNavController()
-                    AppNavHost(navController)
+                    AppNavHost()
                 }
             }
         }
@@ -128,7 +127,7 @@ class MainActivity : ComponentActivity() {
             }
 
             // Привязываемся к сервису для взаимодействия
-            bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+           // bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
             Log.i("MainActivity", "2200001 USB сервис запущен")
         } catch (e: Exception) {
             Log.e("MainActivity", "2200002 Ошибка запуска USB сервиса: ${e.message}")

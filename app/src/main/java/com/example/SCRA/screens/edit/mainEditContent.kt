@@ -64,6 +64,7 @@ import com.example.SCRA.AppState1
 import com.example.SCRA.R
 import com.example.SCRA.data.ItemPass
 import com.example.SCRA.data.ScraList
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import qrscanner.QrScanner
 
@@ -156,12 +157,14 @@ fun mainEditContent(
                                 .clip(shape = RoundedCornerShape(size = 14.dp)),
                             flashlightOn = flashlightOn,
                             launchGallery = launchGallery,
-                            onCompletion = {
-
-                                getDataByQrCode(it)
-                                //qrCodeURL = it
-
+                            onCompletion = { code ->
                                 startBarCodeScan = false
+
+                                // Даем камере корректно закрыться
+                                coroutineScope.launch {
+                                    delay(1000)
+                                    getDataByQrCode(code)
+                                }
                             },
                             onGalleryCallBackHandler = {
                                 launchGallery = it

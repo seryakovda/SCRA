@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NavHostViewModel @Inject constructor(): ViewModel() {
-    val _authState: MutableLiveData<AuthState> = MutableLiveData(AuthState.LOADING)
+    private val _authState: MutableLiveData<AuthState> = MutableLiveData(AuthState.LOADING)
     val authState: LiveData<AuthState> get() = _authState
 
     enum class AuthState{
