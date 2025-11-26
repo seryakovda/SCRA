@@ -1,6 +1,7 @@
 package com.example.SCRA.screens.edit
 
 import android.graphics.fonts.FontStyle
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -27,6 +28,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHostState
@@ -45,10 +48,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.EventListener
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ErrorResult
+import coil.request.ImageRequest
+import com.example.SCRA.AppState1
 
 import com.example.SCRA.R
 import com.example.SCRA.data.ItemPass
@@ -76,14 +87,15 @@ fun mainEditContent(
 
     var statusPass = "OK";
     var colorPass = "#FFFFFF";
-    var urlPhoto = ""
+    var urlPhoto = "false"
 
     // смотрим в первый элемент и получаем из него базовые настройки для отображения
     if (dataByQrCode != null && dataByQrCode.isNotEmpty()) {
         val firstItem = dataByQrCode[0]
-         statusPass = firstItem.name;
-         colorPass = firstItem.color;
-         urlPhoto = firstItem.value;
+        statusPass = firstItem.name;
+        colorPass = firstItem.color;
+        if (firstItem.value != "false")
+            urlPhoto = "http://${AppState1.IpRemoteServer}/index_ajax.php?" + firstItem.value
     }
     colorPass = colorPass.replace("#", "FF")
 
@@ -114,6 +126,20 @@ fun mainEditContent(
                         .border(2.dp, Color.Blue, RoundedCornerShape(size = 14.dp)),
                 ) {
                     // Фотография
+                    if ( urlPhoto != "false"){
+                        Log.i("Photoimage", urlPhoto)
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                // картинка 1
+                                .data(urlPhoto)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxSize()
+                        )
+                    }
                 }
                 Column {
                     Box( // окно для QrScanner
@@ -287,7 +313,9 @@ fun printPass(dataByQrCode:List<ItemPass>?){
     ) {
         if (dataByQrCode != null) {
             var color: Long = 0xFFebf7ff
-            dataByQrCode.forEach {
+
+            dataByQrCode.forEachIndexed  { index, it->
+                if (index>0)
                     printPassRow(it)
             }
         }
