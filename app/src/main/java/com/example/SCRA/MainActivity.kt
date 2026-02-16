@@ -90,7 +90,7 @@ class MainActivity : ComponentActivity() {
         }
 
         // Запускаем USB сервис при создании Activity
-        startUsbService()
+//        startUsbService()
     }
 
     override fun onResume() {

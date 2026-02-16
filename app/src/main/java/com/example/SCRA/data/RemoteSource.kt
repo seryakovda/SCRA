@@ -124,8 +124,8 @@ class RemoteSource @Inject constructor(private val client: HttpClient) {
         return retValue
     }
 
-    suspend fun autorisation(login: String, pass: String, sessionHandle: String): Boolean {
-
+    suspend fun autorisation(login: String, pass: String,IpServer: String, sessionHandle: String): Boolean {
+        IpRemoteServer = IpServer
         val requestTxt =
                 "r0=SYS" +
                 "&r1=autorisation" +

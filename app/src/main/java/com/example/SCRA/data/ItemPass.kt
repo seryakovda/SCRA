@@ -3,9 +3,9 @@ package com.example.SCRA.data
 import kotlinx.serialization.Serializable
 
 @Serializable
-class ItemPass (
-    var name:String,
-    var value:String,
-    var color:String,
+data class ItemPass(
+    val name: String = "",
+    val value: String = "",
+    val color: String = ""
 )
 

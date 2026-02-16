@@ -16,6 +16,9 @@ import com.hoho.android.usbserial.driver.UsbSerialProber
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.time.LocalTime
+import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -275,23 +278,26 @@ class UsbForegroundService : Service() {
 
     private val buffer = StringBuilder()
     private fun startReadingLoop() {
+        buffer.clear()
         scope.launch {
-            val buf = ByteArray(1024)
+            val buf = ByteArray(30)
             while (isActive && isDeviceConnected) {
                 try {
-                    delay(50);// лёгкая задержка при попытке подлучьть данные  из буфера
-                    val len = port?.read(buf, 100) ?: 0
+                    delay(10);// лёгкая задержка при попытке подлучьть данные  из буфера
+                    val len = port?.read(buf, 10) ?: 0
                     if (len > 0) {
                         val dataBytes = buf.copyOf(len)
                         val chunk  = dataBytes.toHex()
                         if (chunk.startsWith("23") && buffer.length > 2) {
-                            val message = buffer.toString()
+                            var message = buffer.toString()
                             buffer.clear()
 
                             if (message.length == 28) {
-                                myLog.e(TAG, "====== ${message} ======")
+                                val currentTime = LocalTime.now()
+                                message = message +"_"+ currentTime.toString()
+                                myLog.e("getDataByQrCode", "====== ${message} ======")
                                 repository.setValueCode(message)
-                                delay(1000)
+                                delay(200)
                             }
                         }
                         buffer.append(chunk)

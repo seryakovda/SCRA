@@ -8,12 +8,16 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.example.SCRA.AppState1.IpRemoteServer
 import com.example.SCRA.data.ItemPass
 import com.example.SCRA.data.ScraDataStore
 import com.example.SCRA.data.ScraList
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -24,8 +28,9 @@ import java.security.NoSuchAlgorithmException
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Singleton
 
-
+@Singleton
 class Repository @Inject constructor(
     @ApplicationContext
     private var context: Context,
@@ -33,11 +38,15 @@ class Repository @Inject constructor(
     private var localSource: LocalSource,
     private var tireDataStore: ScraDataStore
 ) {
+
+    suspend fun clearDataStore() {
+        tireDataStore.clear()
+    }
     suspend fun testConnection(): Boolean
     {
         var resConn = remoteSource.testConnection() //проверяем на сединение
         if (resConn) {
-            autorisation(getLogin(), getPassword())
+            autorisation(getLogin(), getPassword(),getIpServer(),getIdDoor())
             if(getStatusAutorisation()) { // успешность автризациии
                 resConn = true
             }else{
@@ -67,6 +76,7 @@ class Repository @Inject constructor(
     fun setIpServer(value:String)
     {
         localSource.saveTokenString("IpServer",value)
+        IpRemoteServer = value
     }
 
     fun setIdDoor(value:String)
@@ -125,17 +135,15 @@ class Repository @Inject constructor(
 
     }
 
-    suspend fun autorisation(login: String, pass: String) {
+    suspend fun autorisation(login: String, pass: String, IpServer: String, IdDoor: String) {
         requestSession()
         var sessionHandle: String
         sessionHandle = getSessionHandle()
 
-        val result  = remoteSource.autorisation(login, pass, sessionHandle)
+        val result  = remoteSource.autorisation(login, pass,IpServer, sessionHandle)
         if (result){
             setLogin(login)
             setPassword(pass)
-
-
         }
         localSource.saveTokenBoolean("ststusAutorisation",result)
     }
@@ -153,6 +161,7 @@ class Repository @Inject constructor(
         var memDoor = localSource.getTokenString("memDoor")
         var memKey = memCode + "_" + memDoor
         var newKey = code + "_" + inOut
+        Log.v("getDataByQrCode","newKey$newKey = memKey$memKey")
         if (memKey != newKey) {
             var responseData = remoteSource.getDataByQrCode(code, typeCode, inOut, sessionHandle)
             memDataByCode(responseData)
@@ -172,7 +181,12 @@ class Repository @Inject constructor(
 
     fun restoreDataByCode(): List<ItemPass> {
         val json = localSource.getTokenString("responseDataByCode") ?: return emptyList()
-        return Json.decodeFromString<List<ItemPass>>(json)
+        return try {
+            Json.decodeFromString<List<ItemPass>>(json)
+        } catch (e: Exception) {
+            Log.e("RESTORE", "JSON parse error: ${e.message}")
+            emptyList() // заглушка
+        }
     }
 
     suspend fun sendBinaryData(binaryData:String,typeCode:String){

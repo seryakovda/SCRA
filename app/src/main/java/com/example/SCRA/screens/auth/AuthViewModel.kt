@@ -58,7 +58,7 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             repository.setIpServer(IpServer)
             repository.setIdDoor(IdDoor)
-             repository.autorisation(login, pass)
+             repository.autorisation(login, pass,IpServer,IdDoor)
              if(repository.getStatusAutorisation()) {
                  //navHostViewModel._authState.postValue(NavHostViewModel.AuthState.SUCCESS)
 

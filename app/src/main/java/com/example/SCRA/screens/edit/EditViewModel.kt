@@ -22,6 +22,7 @@ import com.example.SCRA.UsbForegroundService
 import com.example.SCRA.data.ItemPass
 import com.example.SCRA.data.ScraList
 import com.example.SCRA.myLog
+import com.example.SCRA.screens.auth.loading.LoadingState
 
 import com.example.tire.data.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -52,42 +53,69 @@ class EditViewModel @Inject constructor(
 
     fun getDataByQrCode(qrCode: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.sendBinaryData(qrCode, "QR_Code")
+            //repository.sendBinaryData(qrCode, "QR_Code")
             if (repository.getDataByQrCode(qrCode, "QR_Code")) {
-                dataByQrCode.postValue(repository.restoreDataByCode())
-                playSound()
+                val data = repository.restoreDataByCode()
+                playSound(data[0].name)
+                dataByQrCode.postValue(data)
             }
         }
     }
 
     fun startListeningUsbCodes() {
-        if (isListening) return  // Слушатель уже запущен
-        isListening = true
-
-        job = viewModelScope.launch(Dispatchers.IO) {
-            repository.getValueCode()
-                .distinctUntilChanged()
-                .collect { value ->
-                    value?.let {
-                        if (repository.getDataByQrCode(it, "FR_Code")) {
-                            dataByQrCode.postValue(repository.restoreDataByCode())
-                            playSound()
-                        }
-                    }
-                }
-        }
+//        if (isListening) return  // Слушатель уже запущен
+//        isListening = true
+//
+//        job = viewModelScope.launch(Dispatchers.IO) {
+//            repository.getValueCode()
+//                .distinctUntilChanged()
+//                .collect { value ->
+//                    value?.let {
+//                        val res = it.split("_")
+//                        myLog.e("getDataByQrCode", "======! ${res[0]} !======")
+//
+//                        if (repository.getDataByQrCode(res[0], "FR_Code")) {
+//                            val data = repository.restoreDataByCode()
+//                            playSound(data[0].name)
+//                            dataByQrCode.postValue(data)
+//                        }
+//                    }
+//                }
+//        }
     }
 
     private var mediaPlayer: MediaPlayer? = null
 
-    fun playSound() {
+    fun playSound(status:String){
+        when(status) {
+            "1" -> playSound_Ok()
+            "0" -> playSound_Err0()
+            "2" -> playSound_Err1()
+            else -> {}
+        }
+    }
+    fun playSound_Ok() {
         mediaPlayer?.release()
         mediaPlayer = MediaPlayer.create(context, R.raw.payment_succes).apply {
             setOnCompletionListener { releaseMediaPlayer() }
             start()
         }
     }
+    fun playSound_Err1() {
+        mediaPlayer?.release()
+        mediaPlayer = MediaPlayer.create(context, R.raw.alert).apply {
+            setOnCompletionListener { releaseMediaPlayer() }
+            start()
+        }
+    }
 
+    fun playSound_Err0() {
+        mediaPlayer?.release()
+        mediaPlayer = MediaPlayer.create(context, R.raw.alert0).apply {
+            setOnCompletionListener { releaseMediaPlayer() }
+            start()
+        }
+    }
     private fun releaseMediaPlayer() {
         mediaPlayer?.release()
         mediaPlayer = null

@@ -27,6 +27,10 @@ class ScraDataStore @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
 
+    suspend fun clear() {
+        dataStore.edit { it.clear() }
+    }
+
     private val dataStore: DataStore<Preferences> =
         PreferenceDataStoreFactory.create(
             corruptionHandler = ReplaceFileCorruptionHandler(
