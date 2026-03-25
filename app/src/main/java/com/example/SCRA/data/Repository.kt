@@ -44,16 +44,27 @@ class Repository @Inject constructor(
     }
     suspend fun testConnection(): Boolean
     {
-        var resConn = remoteSource.testConnection() //проверяем на сединение
-        if (resConn) {
+        Log.i("testConnection", "testConnection->0")
+        var retConn = false;
+        var resConn = remoteSource.testConnection(getLogin(), getPassword(),getIpServer()) //проверяем на сединение
+        Log.i("testConnection", "testConnection->0 $resConn")
+        if (resConn != "Error") {
+
+            // Запоминаем сессию
+            localSource.saveTokenString("sessionHandle",resConn)
+
+            Log.i("testConnection", "API = OK")
             autorisation(getLogin(), getPassword(),getIpServer(),getIdDoor())
+            Log.i("testConnection", "autorisation = ?")
             if(getStatusAutorisation()) { // успешность автризациии
-                resConn = true
+                Log.i("testConnection", "autorisation = OK")
+                retConn = true
             }else{
-                resConn = false
+                Log.i("testConnection", "autorisation = False")
+                retConn = false
             }
         }
-        return resConn;
+        return retConn;
     }
 
     fun setLogin(login:String)
@@ -136,9 +147,11 @@ class Repository @Inject constructor(
     }
 
     suspend fun autorisation(login: String, pass: String, IpServer: String, IdDoor: String) {
-        requestSession()
+        Log.i("testConnection", "autorisation->start0")
+        //requestSession()
         var sessionHandle: String
         sessionHandle = getSessionHandle()
+        Log.i("testConnection", "autorisation->start1")
 
         val result  = remoteSource.autorisation(login, pass,IpServer, sessionHandle)
         if (result){

@@ -194,6 +194,7 @@ fun mainEditContent(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .fillMaxSize()
+                                    .clip(RoundedCornerShape(size = 14.dp))
                             )
                         }
                     }
@@ -313,7 +314,25 @@ fun mainEditContent(
 
 
                 printPass(dataByQrCode)
-
+                Column(
+                    modifier = Modifier.verticalScroll(
+                        enabled = true,
+                        state = ScrollState(0),
+                        flingBehavior = null,
+                        reverseScrolling = false)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Text(
+                            text = "V-00.02" ,
+                            color = Color.Black,
+                            modifier = Modifier.padding(start = 5.dp),
+                            fontSize = 12.sp
+                        )
+                    }
+                }
                 //}
 //            } else {
 //                Column(

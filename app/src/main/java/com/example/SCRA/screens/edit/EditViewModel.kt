@@ -18,7 +18,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.example.SCRA.NavHostViewModel
 import com.example.SCRA.R
-import com.example.SCRA.UsbForegroundService
+
 import com.example.SCRA.data.ItemPass
 import com.example.SCRA.data.ScraList
 import com.example.SCRA.myLog

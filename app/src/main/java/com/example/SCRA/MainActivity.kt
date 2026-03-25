@@ -31,53 +31,53 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private var usbService: UsbForegroundService? = null
-    private var isBound = false
+//    private var usbService: UsbForegroundService? = null
+//    private var isBound = false
 
-    // ServiceConnection для связи с сервисом
-    private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            val binder = service as UsbForegroundService.UsbServiceBinder
-            usbService = binder.getService()
-            isBound = true
-            Log.i("MainActivity", "USB service ON")
-        }
+//    // ServiceConnection для связи с сервисом
+//    private val serviceConnection = object : ServiceConnection {
+//        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+//            val binder = service as UsbForegroundService.UsbServiceBinder
+//            usbService = binder.getService()
+//            isBound = true
+//            Log.i("MainActivity", "USB service ON")
+//        }
+//
+//        override fun onServiceDisconnected(arg0: ComponentName) {
+//            usbService = null
+//            isBound = false
+//            Log.i("MainActivity", "USB service off")
+//        }
+//    }
 
-        override fun onServiceDisconnected(arg0: ComponentName) {
-            usbService = null
-            isBound = false
-            Log.i("MainActivity", "USB service off")
-        }
-    }
-
-    // BroadcastReceiver для получения данных из сервиса
-    private val usbDataReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action) {
-                "USB_DATA_RECEIVED" -> {
-                    val data = intent.getStringExtra("data")
-                    val length = intent.getIntExtra("length", 0)
-                    Log.i("MainActivity", "Получены данные от RFID: $data (длина: $length)")
-                    // Здесь можно обработать данные - обновить UI, отправить на сервер и т.д.
-                }
-            }
-        }
-    }
+//    // BroadcastReceiver для получения данных из сервиса
+//    private val usbDataReceiver = object : BroadcastReceiver() {
+//        override fun onReceive(context: Context?, intent: Intent?) {
+//            when (intent?.action) {
+//                "USB_DATA_RECEIVED" -> {
+//                    val data = intent.getStringExtra("data")
+//                    val length = intent.getIntExtra("length", 0)
+//                    Log.i("MainActivity", "Получены данные от RFID: $data (длина: $length)")
+//                    // Здесь можно обработать данные - обновить UI, отправить на сервер и т.д.
+//                }
+//            }
+//        }
+//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Регистрируем BroadcastReceiver для получения данных от USB сервиса
         // Исправление для Android 12+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(
-                usbDataReceiver,
-                IntentFilter("USB_DATA_RECEIVED"),
-                Context.RECEIVER_NOT_EXPORTED
-            )
-        } else {
-            registerReceiver(usbDataReceiver, IntentFilter("USB_DATA_RECEIVED"))
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//            registerReceiver(
+//                usbDataReceiver,
+//                IntentFilter("USB_DATA_RECEIVED"),
+//                Context.RECEIVER_NOT_EXPORTED
+//            )
+//        } else {
+//            registerReceiver(usbDataReceiver, IntentFilter("USB_DATA_RECEIVED"))
+//        }
         setContent {
             SCRATheme {
                 Surface(
@@ -89,8 +89,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Запускаем USB сервис при создании Activity
-//        startUsbService()
+
     }
 
     override fun onResume() {
@@ -99,54 +98,21 @@ class MainActivity : ComponentActivity() {
         initCamera()
     }
 
-    override fun onPause() {
-        super.onPause()
-        // Не останавливаем сервис здесь, чтобы он работал в фоне
-    }
+//    override fun onPause() {
+//        super.onPause()
+//        // Не останавливаем сервис здесь, чтобы он работал в фоне
+//    }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        // Отключаемся от сервиса
-        if (isBound) {
-            unbindService(serviceConnection)
-            isBound = false
-        }
-        unregisterReceiver(usbDataReceiver)
-    }
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        // Отключаемся от сервиса
+//        if (isBound) {
+//            unbindService(serviceConnection)
+//            isBound = false
+//        }
+//        unregisterReceiver(usbDataReceiver)
+//    }
 
-
-    private fun startUsbService() {
-        try {
-            val serviceIntent = Intent(this, UsbForegroundService::class.java)
-
-            // Запускаем сервис
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(serviceIntent)
-            } else {
-                startService(serviceIntent)
-            }
-
-            // Привязываемся к сервису для взаимодействия
-           // bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
-            Log.i("MainActivity", "2200001 USB сервис запущен")
-        } catch (e: Exception) {
-            Log.e("MainActivity", "2200002 Ошибка запуска USB сервиса: ${e.message}")
-        }
-    }
-
-    // Методы для взаимодействия с сервисом из других частей приложения
-    fun sendCommandToUsb(command: String) {
-        if (isBound) {
-            usbService?.sendCommand(command)
-            Log.i("MainActivity", "2200003 Команда отправлена в USB сервис: $command")
-        } else {
-            Log.w("MainActivity", "2200004 Сервис не подключен, команда не отправлена: $command")
-        }
-    }
-
-    fun isUsbConnected(): Boolean {
-        return isBound && usbService?.isConnected() == true
-    }
 
     // Остальные методы для разрешений остаются без изменений
     private val permissionId = 2
@@ -170,14 +136,6 @@ class MainActivity : ComponentActivity() {
             requestPermissionsCamera()
             Log.i("MainActivity", "2200008 Запрошены разрешения камеры")
         }
-    }
-
-    private fun isLocationEnabled(): Boolean {
-        val locationManager: LocationManager =
-            getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
-            LocationManager.NETWORK_PROVIDER
-        )
     }
 
     private fun checkPermissions(): Boolean {

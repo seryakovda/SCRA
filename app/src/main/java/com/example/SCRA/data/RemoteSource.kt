@@ -68,7 +68,7 @@ class RemoteSource @Inject constructor(private val client: HttpClient) {
             
             requestTxt = "http://$IpRemoteServer/index_ajax.php?" + requestTxt
     
-            //Log.i("MyMSG",requestTxt)
+            Log.i("MyMSG1",requestTxt)
         var retStatus = ControlHttpResponse(httpResponse = null, error = true)
         while (retStatus.error) {
             retStatus = statusRequest(requestTxt)
@@ -92,20 +92,33 @@ class RemoteSource @Inject constructor(private val client: HttpClient) {
     }
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
-    suspend fun testConnection(): Boolean
-    {
-        val requestSessionUrl =
-            "r0=SYS" +
-                    "&r1=registrationKeyAPI" +
-                    "&keyAPI=$keyAPI";
-        var requestTxt = "http://$IpRemoteServer/index_ajax.php?" + requestSessionUrl
+suspend fun testConnection(login: String, pass: String, IpServer: String): String
+{
+    val requestSessionUrl =
+        "r0=SYS" +
+                "&r1=registrationKeyAPI" +
+                "&keyAPI=$keyAPI";
+    var requestTxt = "http://$IpServer/index_ajax.php?" + requestSessionUrl
 
-        var retStatus = ControlHttpResponse(httpResponse = null, error = true)
-        Log.i("testConnection", requestTxt)
-        retStatus = statusRequest(requestTxt)
-        Log.i("testConnection", retStatus.toString())
-        return !retStatus.error
+    Log.i("testConnection", requestTxt)
+    var retStatus = ControlHttpResponse(httpResponse = null, error = true)
+
+    retStatus = statusRequest(requestTxt)
+    var retValue = "Error"
+
+    if (!retStatus.error) {
+        var retValue1 = retStatus.httpResponse!!
+
+
+        if (retValue1.status.isSuccess()) {
+            retValue = retValue1.body<SessionHandle>().sessionHandle
+        } else {
+            retValue = "Error"
+        }
     }
+
+    return retValue
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
     suspend fun requestSession(): String {
@@ -119,7 +132,7 @@ class RemoteSource @Inject constructor(private val client: HttpClient) {
         if (response.status.isSuccess()) {
             retValue = response.body<SessionHandle>().sessionHandle
         } else {
-            retValue = ""
+            retValue = "Error"
         }
         return retValue
     }
