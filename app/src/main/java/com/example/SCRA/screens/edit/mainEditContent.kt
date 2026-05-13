@@ -326,7 +326,7 @@ fun mainEditContent(
                         horizontalArrangement = Arrangement.Start
                     ) {
                         Text(
-                            text = "V-00.02" ,
+                            text = "V-00.03" ,
                             color = Color.Black,
                             modifier = Modifier.padding(start = 5.dp),
                             fontSize = 12.sp
